@@ -9,13 +9,14 @@ function makeStreamApiCall() {
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.setRequestHeader("Authorization", `Bearer ${API_KEY}`);
 	xhr.setRequestHeader('Accept', 'text/event-stream');
-	const promptrole = document.getElementById('defaultselect').value;
-	const promptstring=document.getElementById('predefineprompt').value;
 	const userstring = document.getElementById('userinput').value;
+	if (!userstring.trim()) {
+	return;
+	}
+
 	const reqBody = {
 		messages: [
 			...buildContextString(),
-			{ "role": promptrole, "content": promptstring },
 			{ "role": "user", "content": userstring }],
 		model: document.getElementById("model").value,
 		max_tokens: parseInt(document.getElementById("max_tokens").value),
@@ -24,11 +25,6 @@ function makeStreamApiCall() {
 		stream: true,
 	};
 	const parentresponsContainer = document.getElementById('response');
-
-	const promptContainer = createResponse(promptrole, promptstring);
-	parentresponsContainer.appendChild(promptContainer);
-	parentresponsContainer.scrollTop = promptContainer.offsetTop - parentresponsContainer.offsetTop;
-
 	const userContainer = createResponse('user', userstring);
 	parentresponsContainer.appendChild(userContainer);
 	parentresponsContainer.scrollTop = userContainer.offsetTop - parentresponsContainer.offsetTop;
@@ -89,6 +85,9 @@ function makeStreamApiCall() {
 
 
 function createResponse(role, context) {
+	const autoselected=document.getElementById("autoSelect").checked;
+
+
 	// create the container div
 	const container = document.createElement('div');
 	container.classList.add('LocalGPTrespons-container');
@@ -111,7 +110,8 @@ function createResponse(role, context) {
 	const contextDiv = document.createElement('div');
 	contextDiv.classList.add('LocalGPTcontext');
 	contextDiv.textContent = context;
-
+	if(autoselected)
+		contextDiv.style.backgroundColor = 'yellow';
 
 	// append the elements to the container
 	container.appendChild(roleImg);
@@ -206,19 +206,6 @@ function showStatus(status) {
 }
 
 
-document.getElementById("predefineprompt").addEventListener("input", function () {
-	this.style.height = "auto";
-	this.style.height = (this.scrollHeight) + "px";
-});
-
-document.getElementById("predefineprompt").addEventListener("blur", function () {
-	this.style.removeProperty('height');
-});
-
-document.getElementById("predefineprompt").addEventListener("focus", function () {
-	this.style.height = "auto";
-	this.style.height = (this.scrollHeight) + "px";
-});
 
 
 function loadProfilesFromFile(filename) {
@@ -332,7 +319,7 @@ function appendProfilelistUI(newprofiles) {
 		content.textContent = `${profile.saveuser}`;
 		content.style.display = 'none';
 		content.addEventListener('click', function () {
-			document.getElementById("predefineprompt").value = profile.saveuser;
+			document.getElementById("userinput").value = profile.saveuser;
 		});
 		profileItem.appendChild(content);
 
@@ -417,7 +404,7 @@ function importProfiles() {
 
 function addNewPrompt(){
 	//pop up a window to ask for the new prompt name
-	const newPromptname = prompt("Please enter the new prompt name", "new prompt");
+	const newPromptname = prompt("Please enter the new prompt name", "Act as...");
 	if (newPromptname != null) {
 		const profileList = document.getElementById('LocalGPTprofiles-list');
 		// Loop through each profile and create a list item element for it
@@ -450,14 +437,16 @@ function addNewPrompt(){
 	
 			const content = document.createElement('div');
 			content.classList.add('LocalGPTprofiles-content');
-			content.textContent = document.getElementById("predefineprompt").value;
+			content.textContent = document.getElementById("userinput").value;
 			content.style.display = 'block';
 			content.addEventListener('click', function () {
-				document.getElementById("predefineprompt").value = profile.saveuser;
+				document.getElementById("userinput").value = content.textContent;
 			});
 			profileItem.appendChild(content);
-	
-			profileList.appendChild(profileItem);
+			profileList.insertBefore(profileItem, profileList.firstChild);
+			profileList.scrollTop = profileItem.offsetTop - profileList.offsetTop;
+
+
 	
 		
 	}
@@ -468,3 +457,9 @@ function cleanupChat(){
 	const chatList = document.getElementById('response');
 	chatList.innerHTML = '';
 }
+
+document.addEventListener('keydown', function(event) {
+	if (event.ctrlKey && event.keyCode === 13) {
+	  makeStreamApiCall();
+	}
+  });
