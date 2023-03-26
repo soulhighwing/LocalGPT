@@ -11,3 +11,6 @@ v 1.0.0
 - chat with/without context
 
 I write this for my daughter, thought it might be useful to others.
+
+If you prefer Chrome Extension, try this:
+https://chrome.google.com/webstore/detail/chatgptcustomizer/ciceinlnjocpopoccfhekjebkpapogoc
