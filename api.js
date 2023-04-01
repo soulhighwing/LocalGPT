@@ -69,7 +69,7 @@ function makeStreamApiCall() {
 				};
 			};
 			const lastChild = responseContainer.lastChild;
-			lastChild.innerHTML = buffer;
+			lastChild.innerHTML =processSpecialChar(buffer);
 			//console.log(parentresponsContainer.scrollTop ,responseContainer.offsetTop , parentresponsContainer.offsetTop);
 			parentresponsContainer.scrollTop = responseContainer.offsetTop - parentresponsContainer.offsetTop;
 
@@ -82,9 +82,16 @@ function makeStreamApiCall() {
 	xhr.send(JSON.stringify(reqBody));
 }
 
+function processSpecialChar(text) {
+	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}	
 
 
-function createResponse(role, context) {
+function createResponse(role, responsetext) {
+
+	const context = processSpecialChar(responsetext);
+	
+
 	const autoselected=document.getElementById("autoSelect").checked;
 
 
@@ -109,7 +116,7 @@ function createResponse(role, context) {
 	// create the context div
 	const contextDiv = document.createElement('div');
 	contextDiv.classList.add('LocalGPTcontext');
-	contextDiv.textContent = context;
+	contextDiv.innerHTML = context;
 	if(autoselected)
 		contextDiv.style.backgroundColor = 'yellow';
 
